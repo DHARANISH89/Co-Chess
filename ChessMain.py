@@ -54,9 +54,11 @@ def main():
                     if move in validMoves:
                         moveMade = True 
                     # if we're adding an AI later, we will need to check if the move is valid before making it
-                    gs.makeMove(move)
-                    sqSelected = () # reset user clicks
-                    playerClicks = []
+                        gs.makeMove(move) # bug fixed here
+                        sqSelected = () # reset user clicks
+                        playerClicks = []
+                    else: 
+                        playerClicks = [sqSelected]
             #key handler
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z: #undo when 'z' is pressed
@@ -68,6 +70,7 @@ def main():
             moveMade = False
             
         drawGameState(screen, gs)
+        highlightSquares(screen, gs, sqSelected, validMoves)
         clock.tick(MAX_FPS)
         p.display.flip()
 '''
@@ -89,6 +92,29 @@ def drawBoard(screen):
             # use (r+c)%2 to determine color
             color = colors[((r+c)%2)]
             p.draw.rect(screen, color, p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+
+# Get all possible moves for a selected square
+def getMovesForSelectedSquare(sqSelected, validMoves):
+    moves = []
+    for move in validMoves:
+        if (move.startRow, move.startCol) == sqSelected:
+            moves.append(move)
+    return moves
+
+def highlightSquares(screen, gs, sqSelected, validMoves):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'): # sqSelected is a piece that can be moved
+            # highlight selected square
+            s = p.Surface((SQ_SIZE, SQ_SIZE))
+            s.set_alpha(100) # transparency value -> 0 transparent; 255 opaque
+            s.fill(p.Color('red'))
+            screen.blit(s, (c*SQ_SIZE, r*SQ_SIZE))
+            # highlight moves from that square
+            s.fill(p.Color('yellow'))
+            for move in getMovesForSelectedSquare(sqSelected, validMoves):
+                screen.blit(s, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
+
 
 
 
